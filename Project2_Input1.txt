@@ -1,0 +1,2 @@
+abstract
+boolean break byte
