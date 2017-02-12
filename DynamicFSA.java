@@ -8,17 +8,17 @@ import java.util.Arrays;
 
 public class DynamicFSA {
 	private static int[] switchArr = new int[54];
-	private static char[] symbolArr = new char[200];
-	private static int[] nextArr = new int[200];
+	private static char[] symbolArr = new char[500];
+	private static int[] nextArr = new int[500];
 
 	private static ArrayList<String> reservedWords = new ArrayList<String>();
 
 	public static void main(String[] args) throws FileNotFoundException {
 		//Set switchArray values to -1
-		setSwitchValues();
+		Arrays.fill(switchArr, -1);
 		
 		//Set NextArr values values to -1
-		setNextArrValues();
+		Arrays.fill(nextArr, -1);
 
 		/** READ FIRST INPUT FILE */
 		BufferedReader br = new BufferedReader(new FileReader("Project2_Input1.txt"));
@@ -46,12 +46,11 @@ public class DynamicFSA {
 		//Pointer points at 0 index of symbol array
 		int symbolPtr = 0;
 		int lastReference = -1;
-
-		System.out.println("size: " + reservedWords.size());
 		
 		for(int i=0; i < reservedWords.size(); i++){
 			System.out.println("run #" + i);
 			String word = reservedWords.get(i);
+			//first character of word
 			int symbol = word.charAt(0);
 
 			if(switchArr[(symbol-71)] == -1) {	//Word is undefined
@@ -68,24 +67,45 @@ public class DynamicFSA {
 				symbolArr[symbolPtr] = '*';
 				symbolPtr += 1;
 				
-				lastReference = symbolPtr;
 				//symbolPtr holds next available index
-			} else {	//Word shares same 1st character
+				lastReference = symbolPtr;
+			} /**else {	//Word shares same 1st character
+				symbolPtr = switchArr[(symbol-71)];	//Index of where 1st instance of switch word begins
+				System.out.println("Jump to index: " + symbolPtr);
 				
-			}
+				Boolean exit = false;
+				while(!exit) {
+					//if (word.charAt is same as symbol[pointer])
+						//if (symbol is not *) {
+							//increment pointer
+							//get next word.charAt
+						//else
+							//print endmarker;
+							//exit = true;
+					
+					//
+				}
+			}*/
 			
-			/**else {	//Word shares AT LEAST same 1st character
+			else {	//Word shares AT LEAST same 1st character
 				symbolPtr = switchArr[(symbol-71)];	//Index of same 1st character
+				char w = word.charAt(1);	//2nd character
 				//System.out.println("Changed symbolPtr: " + symbolPtr);
 				Boolean exit = false;
 				while(!exit) {
-					char w = word.charAt(1);	//2nd character
-					
+									
 					for(int j=1; j < word.length(); j++) {
 						//System.out.println("symbolArr[symbolPtr]" + symbolArr[symbolPtr]);
 						if(symbolArr[symbolPtr] == w) {
-							symbolPtr += 1;
-							w = word.charAt(j);
+							if(symbolArr[symbolPtr] != '*') {
+								symbolPtr += 1;
+								w = word.charAt(j+1);
+							} else {
+								symbolArr[symbolPtr] = '*';
+								symbolPtr += 1;
+								exit = true;
+								break;
+							}
 						} else {
 							if (nextArr[symbolPtr] != -1) {
 								//Update symbolPtr to lastReference
@@ -111,7 +131,7 @@ public class DynamicFSA {
 						}
 					}
 				}
-			}*/
+			}
 			
 			System.out.println("symbolPtr: " + symbolPtr);
 			//System.out.println("Arrya: " + Arrays.toString(symbolArr));
@@ -125,8 +145,7 @@ public class DynamicFSA {
 		
 		
 	}
-
-
+	
 
 	/**
 	 * Helper Method - Prints Switch array contents
@@ -172,23 +191,4 @@ public class DynamicFSA {
 		}
 		System.out.println();
 	}
-
-	/**
-	 * Helper Method - Sets switchArray values to -1
-	 */
-	private static void setSwitchValues() {
-		for(int i=0; i < switchArr.length; i++) {
-			switchArr[i] = -1;
-		}
-	}
-	
-	/**
-	 * Helper Method - Sets nextArray values to -1
-	 */
-	private static void setNextArrValues() {
-		for(int i=0; i < switchArr.length; i++) {
-			nextArr[i] = -1;
-		}
-	}
-
 }
