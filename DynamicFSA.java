@@ -14,20 +14,17 @@ public class DynamicFSA {
 	private static ArrayList<String> reservedWords = new ArrayList<String>();
 
 	public static void main(String[] args) throws FileNotFoundException {
-		//Set switchArray values to -1
+		//Set switchArr and nextArr values to -1
 		Arrays.fill(switchArr, -1);
-		
-		//Set NextArr values values to -1
 		Arrays.fill(nextArr, -1);
 
 		/** READ FIRST INPUT FILE */
+		//Store java reserved words in reservedWords
 		BufferedReader br = new BufferedReader(new FileReader("Project2_Input1.txt"));
-
 		try {
+			//Get each reserved word individually
 			String line = "";
-			/** READ RESERVED WORDS */
 			while( (line = br.readLine()) != null) {
-
 				String[] lineSplit = line.split(" ");
 				if(lineSplit.length == 0) {
 					reservedWords.add(line);
@@ -41,20 +38,18 @@ public class DynamicFSA {
 			e.printStackTrace();
 		}
 
-
 		/** TRANSITION MECHANISM */
-		//Pointer points at 0 index of symbol array
-		int symbolPtr = 0;
+		int symbolPtr = 0;	//Pointer set at 0 index of symbol array
 		int lastReference = -1;
 		
+		//Iterates through reservedWords array list
 		for(int i=0; i < reservedWords.size(); i++){
-			System.out.println("run #" + i);
 			String word = reservedWords.get(i);
-			//first character of word
-			int symbol = word.charAt(0);
+			int symbol = word.charAt(0);	//Set symbol to 1st character of word
 
-			if(switchArr[(symbol-71)] == -1) {	//Word is undefined
-				//Set character to index symbolPtr is at symbol array
+			//If 1st character isn't defined in switchArr
+			if(switchArr[(symbol-71)] == -1) {	
+				//Set index to next available location (symbolPtr)
 				switchArr[(symbol-71)] = symbolPtr;
 
 				//Put the rest of word in symbol array
@@ -67,83 +62,63 @@ public class DynamicFSA {
 				symbolArr[symbolPtr] = '*';
 				symbolPtr += 1;
 				
-				//symbolPtr holds next available index
+				//Update symbolPtr to next available index
 				lastReference = symbolPtr;
-			} /**else {	//Word shares same 1st character
-				symbolPtr = switchArr[(symbol-71)];	//Index of where 1st instance of switch word begins
-				System.out.println("Jump to index: " + symbolPtr);
 				
-				Boolean exit = false;
-				while(!exit) {
-					//if (word.charAt is same as symbol[pointer])
-						//if (symbol is not *) {
-							//increment pointer
-							//get next word.charAt
-						//else
-							//print endmarker;
-							//exit = true;
-					
-					//
-				}
-			}*/
-			
-			else {	//Word shares AT LEAST same 1st character
-				symbolPtr = switchArr[(symbol-71)];	//Index of same 1st character
-				char w = word.charAt(1);	//2nd character
-				//System.out.println("Changed symbolPtr: " + symbolPtr);
-				Boolean exit = false;
-				while(!exit) {
-									
-					for(int j=1; j < word.length(); j++) {
-						//System.out.println("symbolArr[symbolPtr]" + symbolArr[symbolPtr]);
-						if(symbolArr[symbolPtr] == w) {
-							if(symbolArr[symbolPtr] != '*') {
-								symbolPtr += 1;
-								w = word.charAt(j+1);
-							} else {
-								symbolArr[symbolPtr] = '*';
-								symbolPtr += 1;
-								exit = true;
-								break;
-							}
-						} else {
-							if (nextArr[symbolPtr] != -1) {
-								//Update symbolPtr to lastReference
-								symbolPtr = nextArr[symbolPtr];
-								break;
-							} else {
-								//Update nextArr
-								nextArr[symbolPtr] = lastReference;
-								symbolPtr = lastReference;
-								//System.out.println("Last reference: " + lastReference);
-								//Put the rest of word in symbol array
-								//System.out.println("k: " + j);
-								for(int k=j; k < word.length(); k++) { 
-									symbolArr[symbolPtr] = word.charAt(k);
-									symbolPtr += 1;
-								}
-								symbolArr[symbolPtr] = '*';
-								symbolPtr += 1;
-								lastReference = symbolPtr;
-								exit= true;
-								break;
-							}
+			} else {	//If 1st character is defined in switchArr
+				//Update symbolPtr to index of first instance 
+				//where word with the same 1st character begins
+				symbolPtr = switchArr[(symbol-71)];	
+				
+				//Count iterates through length of word
+				//Set to 2nd chara
+				int j = 1;	 
+				
+				//Logic to navigate trie
+				while(j < word.length()) {
+					//Compare word to symbol array
+					if (word.charAt(j) == symbolArr[symbolPtr]) {	//If same, keep iterating
+						j++;
+						symbolPtr++;
+					} else {	//If no match
+						if(nextArr[symbolPtr] != -1) {	//Update symbolPtr to index to jump to
+							symbolPtr = nextArr[symbolPtr];
+						} else {	//Update symbolPtr to next available spot
+							nextArr[symbolPtr] = lastReference;
+							symbolPtr = nextArr[symbolPtr];
+							break;
 						}
 					}
 				}
+				//Put the rest of word in symbol array
+				for(; j < word.length(); j++) {
+					symbolArr[symbolPtr] = word.charAt(j);
+					symbolPtr += 1;
+				}
+
+				//Concatenate end_marker '*'
+				//If we're at the end of the word and there is a star, then we have a duplicate. 
+				//And we dont' add another star
+				//if(j != word.length() && symbolArr[symbolPtr] != '*') {
+					symbolArr[symbolPtr] = '*';
+					symbolPtr += 1;
+				//}
+					
+				//symbolPtr holds next available index
+				lastReference = symbolPtr;
 			}
-			
-			System.out.println("symbolPtr: " + symbolPtr);
-			//System.out.println("Arrya: " + Arrays.toString(symbolArr));
-			System.out.print("        ");
-			for(int k=0; k<100; k++) {
-				System.out.print(k + " ");
-			}
-			System.out.println();
-			System.out.println("Arrya: " + Arrays.toString(symbolArr));
 		}
-		
-		
+
+		//System.out.println("Switch: " + Arrays.toString(switchArr));
+		printSwitchArr();
+		//System.out.print("        ");
+		//for(int k=0; k<100; k++) {
+		//	System.out.print(k + "  ");
+		//}
+	
+		//System.out.println();
+		//System.out.println("Symb : " + Arrays.toString(symbolArr));
+		//System.out.println("Next : " + Arrays.toString(nextArr));
 	}
 	
 
@@ -153,12 +128,12 @@ public class DynamicFSA {
 	private static void printSwitchArr() {
 		System.out.print("          ");
 		for(int i=0; i < 20; i++) {
-			System.out.print((char) (i + 65) + "   ");
+			System.out.print((char) (i + 65) + "    ");
 		}
 
 		System.out.print("\nswitch:  ");
 		for(int i=0; i < 20; i++) {
-			System.out.print(switchArr[i] + "  ");
+			System.out.print(switchArr[i] + "   ");
 		}
 		System.out.println("\n");
 
@@ -169,25 +144,25 @@ public class DynamicFSA {
 		}
 
 		for(int i=26; i < 40; i++) {
-			System.out.print((char) (i + 71) + "   ");
+			System.out.print((char) (i + 71) + "    ");
 		}
 
 		System.out.print("\nswitch:  ");
 		for(int i=20; i < 40; i++) {
-			System.out.print(switchArr[i] + "  ");
+			System.out.print(switchArr[i] + "   ");
 		}
 		System.out.println("\n");
 
 		//40 to 54
 		System.out.print("          ");
 		for(int i=40; i < 52; i++) {
-			System.out.print((char) (i + 71) + "   ");
+			System.out.print((char) (i + 71) + "    ");
 		}
-		System.out.println("_   $");
+		System.out.print("_     $");
 
 		System.out.print("\nswitch:  ");
 		for(int i=40; i < 54; i++) {
-			System.out.print(switchArr[i] + "  ");
+			System.out.print(switchArr[i] + "   ");
 		}
 		System.out.println();
 	}
