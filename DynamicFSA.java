@@ -37,7 +37,7 @@ public class DynamicFSA {
 
 				//Store unique part of word in symbolArr
 				createUniqueWord(word, 1);
-				
+
 			} else {	//If 1st character is defined in switchArr
 				//Update index to first instance where word begins (symbolPtr)
 				symbolPtr = switchArr[(symbol-71)];	
@@ -70,21 +70,21 @@ public class DynamicFSA {
 				createUniqueWord(word, counter);
 			}
 		}
-		
+
 		/** READ SECOND INPUT FILE */
 		ArrayList<String> javaProgram = new ArrayList<String>();
 		readInput2(javaProgram);
-		
+
 		/** LOGIC TO EXTRACT RESERVED WORDS AND IDENTIFIERS*/
 		for(int i=0; i < javaProgram.size(); i++) {
 			String word = javaProgram.get(i);
-			
+
 			//If it is a reserved word, print right away
 			if(isReservedWord(reservedWords, word)) {
 				System.out.println(word + " *");
 			} else {
-			//Begin crazy logic
-				
+				//Begin crazy logic
+
 			}
 		}
 
@@ -99,7 +99,7 @@ public class DynamicFSA {
 		System.out.println("Symb : " + Arrays.toString(symbolArr));
 		System.out.println("Next : " + Arrays.toString(nextArr));
 	}
-	
+
 	/**
 	 * Helper Method - Checks if word is a Java reserved word
 	 */
@@ -126,8 +126,8 @@ public class DynamicFSA {
 		//If we're at the end of the word and there is a star, then we have a duplicate. 
 		//Don't add another star
 		if(counter == word.length() && symbolArr[symbolPtr] != '*') {
-		symbolArr[symbolPtr] = '*';
-		symbolPtr += 1;
+			symbolArr[symbolPtr] = '*';
+			symbolPtr += 1;
 		}
 
 		//Update symbolPtr to next available index
@@ -157,7 +157,7 @@ public class DynamicFSA {
 			e.printStackTrace();
 		}
 	}
-	
+
 	/**
 	 * Helper Method - Read Project2_Input2.txt
 	 * 				   Store Java program reserved words and identifiers in javaProgram Array List 
@@ -170,13 +170,13 @@ public class DynamicFSA {
 			while( (line = br.readLine()) != null) {
 				//Replace all non-alphanumberic, _, and $ with spaces
 				line = line.replaceAll("[^A-Za-z0-9_$]", " ");
-				
+
 				//Split the line using spaces as delimiter
 				String[] lineSplit = line.split(" ");
-				
+
 				//Store word ONLY if it is an identifier
 				for(int i=0; i < lineSplit.length; i++) {
-					
+
 					if((lineSplit[i]).equals("")) {
 						//If empty string, don't add to Array List
 					} else if(lineSplit[i].matches("[0-9]")) {
