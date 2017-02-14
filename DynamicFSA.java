@@ -113,7 +113,7 @@ public class DynamicFSA {
 
 	/**
 	 * Helper Method - Stores unique characters of word in symbolArr
-	 * 				   Iterates from given counter to word.length()
+	 * 		   Iterates from given counter to word.length()
 	 */
 	private static void createUniqueWord(String word, int counter) {
 		//Put the rest of word in symbol array
@@ -136,7 +136,7 @@ public class DynamicFSA {
 
 	/**
 	 * Helper Method - Read Project2_Input1.txt
-	 * 				   Store Java reserved words in reservedWords ArrayList
+	 * 		   Store Java reserved words in reservedWords ArrayList
 	 */
 	private static void readInput1(ArrayList<String> reservedWords) throws FileNotFoundException {
 		BufferedReader br = new BufferedReader(new FileReader("Project2_Input1.txt"));
@@ -160,7 +160,7 @@ public class DynamicFSA {
 
 	/**
 	 * Helper Method - Read Project2_Input2.txt
-	 * 				   Store Java program reserved words and identifiers in javaProgram Array List 
+	 * 		   Store Java program reserved words and identifiers in javaProgram Array List 
 	 */
 	private static void readInput2(ArrayList<String> javaProgram) throws FileNotFoundException {
 		BufferedReader br = new BufferedReader(new FileReader("Project2_Input2.txt"));
