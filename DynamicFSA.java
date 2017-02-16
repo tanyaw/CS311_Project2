@@ -88,17 +88,12 @@ public class DynamicFSA {
 			}
 		}
 
+		//Print trie data structure
 		printSwitchArr();
-
-		System.out.print("        ");
-		for(int k=0; k<100; k++) {
-			System.out.print(k + "  ");
-		}
-
-		System.out.println();
-		System.out.println("Symb : " + Arrays.toString(symbolArr));
-		System.out.println("Next : " + Arrays.toString(nextArr));
+		printSymbolNextArr();
 	}
+
+	
 
 	/**
 	 * Helper Method - Checks if word is a Java reserved word
@@ -113,7 +108,7 @@ public class DynamicFSA {
 
 	/**
 	 * Helper Method - Stores unique characters of word in symbolArr
-	 * 		   Iterates from given counter to word.length()
+	 * 				   Iterates from given counter to word.length()
 	 */
 	private static void createUniqueWord(String word, int counter) {
 		//Put the rest of word in symbol array
@@ -136,7 +131,7 @@ public class DynamicFSA {
 
 	/**
 	 * Helper Method - Read Project2_Input1.txt
-	 * 		   Store Java reserved words in reservedWords ArrayList
+	 * 				   Store Java reserved words in reservedWords ArrayList
 	 */
 	private static void readInput1(ArrayList<String> reservedWords) throws FileNotFoundException {
 		BufferedReader br = new BufferedReader(new FileReader("Project2_Input1.txt"));
@@ -160,7 +155,7 @@ public class DynamicFSA {
 
 	/**
 	 * Helper Method - Read Project2_Input2.txt
-	 * 		   Store Java program reserved words and identifiers in javaProgram Array List 
+	 * 				   Store Java program reserved words and identifiers in javaProgram Array List 
 	 */
 	private static void readInput2(ArrayList<String> javaProgram) throws FileNotFoundException {
 		BufferedReader br = new BufferedReader(new FileReader("Project2_Input2.txt"));
@@ -194,46 +189,74 @@ public class DynamicFSA {
 	}
 
 	/**
+	 * Formatting Method - Prints Symbol and Next Array contents
+	 */
+	private static void printSymbolNextArr() {
+		/** 
+		System.out.print("       ");
+		for(int i=0; i < 20; i++) {
+			System.out.printf("%5s", (char) (i + 65));
+		}
+
+		System.out.print("\nswitch:");
+		for(int i=0; i < 20; i++) {
+			System.out.printf("%5s", switchArr[i]);
+		}
+		System.out.println("\n");
+		*/
+		
+		System.out.print("        ");
+		for(int k=0; k<100; k++) {
+			System.out.print(k + "  ");
+		}
+
+		System.out.println();
+		System.out.println("symbol: " + Arrays.toString(symbolArr));
+		System.out.println("next: " + Arrays.toString(nextArr));
+	}
+	
+	/**
 	 * Formatting Method - Prints Switch array contents
 	 */
 	private static void printSwitchArr() {
-		System.out.print("          ");
+		//0 to 20
+		System.out.print("       ");
 		for(int i=0; i < 20; i++) {
-			System.out.print((char) (i + 65) + "    ");
+			System.out.printf("%5s", (char) (i + 65));
 		}
 
-		System.out.print("\nswitch:  ");
+		System.out.print("\nswitch:");
 		for(int i=0; i < 20; i++) {
-			System.out.print(switchArr[i] + "     ");
+			System.out.printf("%5s", switchArr[i]);
 		}
 		System.out.println("\n");
 
 		//20 to 40
-		System.out.print("          ");
+		System.out.print("       ");
 		for(int i=20; i < 26; i++) {
-			System.out.print((char) (i + 65) + "    ");
+			System.out.printf("%5s",(char) (i + 65));
 		}
 
 		for(int i=26; i < 40; i++) {
-			System.out.print((char) (i + 71) + "    ");
+			System.out.printf("%5s",(char) (i + 71));
 		}
 
-		System.out.print("\nswitch:  ");
+		System.out.print("\nswitch:");
 		for(int i=20; i < 40; i++) {
-			System.out.print(switchArr[i] + "     ");
+			System.out.printf("%5s", switchArr[i]);
 		}
 		System.out.println("\n");
 
 		//40 to 54
-		System.out.print("          ");
+		System.out.print("       ");
 		for(int i=40; i < 52; i++) {
-			System.out.print((char) (i + 71) + "     ");
+			System.out.printf("%5s",(char) (i + 71));
 		}
-		System.out.print("_    $");
+		System.out.printf("%5s%5s", '_', '$');
 
-		System.out.print("\nswitch:  ");
+		System.out.print("\nswitch:");
 		for(int i=40; i < 54; i++) {
-			System.out.print(switchArr[i] + "    ");
+			System.out.printf("%5s", switchArr[i]);
 		}
 		System.out.println("\n\n");
 	}
