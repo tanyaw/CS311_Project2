@@ -81,8 +81,11 @@ public class DynamicFSA {
 
 			//If it is a reserved word, print right away
 			if(isReservedWord(reservedWords, word)) {
-				System.out.println(word + " *");
+				System.out.print(word + "* ");
 			} else {
+				if(word.equals("%")) {
+					System.out.println();
+				}
 				//Begin crazy logic
 
 			}
@@ -92,7 +95,6 @@ public class DynamicFSA {
 		printSwitchArr();
 		printSymbolNextArr();
 	}
-
 	
 
 	/**
@@ -162,14 +164,21 @@ public class DynamicFSA {
 
 		try {	
 			String line = "";
-			while( (line = br.readLine()) != null) {
+			while((line = br.readLine()) != null) {
 				//Replace all non-alphanumberic, _, and $ with spaces
 				line = line.replaceAll("[^A-Za-z0-9_$]", " ");
 
 				//Split the line using spaces as delimiter
-				String[] lineSplit = line.split(" ");
+				String[] split = line.split(" ");
+				
+				//Add % to indicate new line
+				String[] lineSplit = new String[(split.length + 1)];
+				for(int i=0; i < split.length; i++) {
+					lineSplit[i] = split[i];
+				}
+				lineSplit[(split.length)] = "%";
 
-				//Store word ONLY if it is an identifier
+				//Store word ONLY if it is a reserved word or identifier
 				for(int i=0; i < lineSplit.length; i++) {
 
 					if((lineSplit[i]).equals("")) {
@@ -177,7 +186,7 @@ public class DynamicFSA {
 					} else if(lineSplit[i].matches("[0-9]")) {
 						//If word begins with integer, it is NOT an identifier
 					} else {
-						//It is an identifier, add to Array List
+						//It is a reserved word or identifier, add to Array List
 						javaProgram.add(lineSplit[i]);	
 					}
 				}
@@ -192,71 +201,70 @@ public class DynamicFSA {
 	 * Formatting Method - Prints Symbol and Next Array contents
 	 */
 	private static void printSymbolNextArr() {
-		/** 
-		System.out.print("       ");
-		for(int i=0; i < 20; i++) {
-			System.out.printf("%5s", (char) (i + 65));
-		}
-
-		System.out.print("\nswitch:");
-		for(int i=0; i < 20; i++) {
-			System.out.printf("%5s", switchArr[i]);
-		}
-		System.out.println("\n");
-		*/
+		for(int j=0; j < (symbolArr.length/20); j++) {
+			System.out.print("       ");
+			for(int i=0; i < 20; i++) {
+				System.out.printf("%5d", (i + (j*20)));
+			}
+	
+			System.out.print("\nsymbol:");
+			for(int i=0; i < 20; i++) {
+				System.out.printf("%5s", symbolArr[(i + (j*20))]);
+			}
+			
+			System.out.print("\n  next:");
+			for(int i=0; i < 20; i++) {
+				System.out.printf("%5s", nextArr[(i + (j*20))]);
+			}
+			System.out.println("\n");
 		
-		System.out.print("        ");
-		for(int k=0; k<100; k++) {
-			System.out.print(k + "  ");
+		//System.out.println("symbol: " + Arrays.toString(symbolArr));
+		//System.out.println("next: " + Arrays.toString(nextArr));
 		}
-
-		System.out.println();
-		System.out.println("symbol: " + Arrays.toString(symbolArr));
-		System.out.println("next: " + Arrays.toString(nextArr));
 	}
 	
 	/**
 	 * Formatting Method - Prints Switch array contents
 	 */
 	private static void printSwitchArr() {
-		//0 to 20
+		//Indices 0 to 20
 		System.out.print("       ");
 		for(int i=0; i < 20; i++) {
-			System.out.printf("%5s", (char) (i + 65));
+			System.out.printf("%6s", (char) (i + 65));
 		}
 
 		System.out.print("\nswitch:");
 		for(int i=0; i < 20; i++) {
-			System.out.printf("%5s", switchArr[i]);
+			System.out.printf("%6s", switchArr[i]);
 		}
 		System.out.println("\n");
 
-		//20 to 40
+		//Indices 20 to 40
 		System.out.print("       ");
 		for(int i=20; i < 26; i++) {
-			System.out.printf("%5s",(char) (i + 65));
+			System.out.printf("%6s",(char) (i + 65));
 		}
 
 		for(int i=26; i < 40; i++) {
-			System.out.printf("%5s",(char) (i + 71));
+			System.out.printf("%6s",(char) (i + 71));
 		}
 
 		System.out.print("\nswitch:");
 		for(int i=20; i < 40; i++) {
-			System.out.printf("%5s", switchArr[i]);
+			System.out.printf("%6s", switchArr[i]);
 		}
 		System.out.println("\n");
 
-		//40 to 54
+		//Indices 40 to 54
 		System.out.print("       ");
 		for(int i=40; i < 52; i++) {
-			System.out.printf("%5s",(char) (i + 71));
+			System.out.printf("%6s",(char) (i + 71));
 		}
-		System.out.printf("%5s%5s", '_', '$');
+		System.out.printf("%6s%6s", '_', '$');
 
 		System.out.print("\nswitch:");
 		for(int i=40; i < 54; i++) {
-			System.out.printf("%5s", switchArr[i]);
+			System.out.printf("%6s", switchArr[i]);
 		}
 		System.out.println("\n\n");
 	}
