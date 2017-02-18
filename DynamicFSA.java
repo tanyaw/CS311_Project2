@@ -79,8 +79,8 @@ public class DynamicFSA {
 		//Iterates through javaProgram array list
 		System.out.println("Last reference: " + lastReference);
 		System.out.println("Symbolpointer: " + symbolPtr);
-		//for(int i=0; i < javaProgram.size(); i++) {
-		for(int i=0; i < 9; i++) {
+		for(int i=0; i < javaProgram.size(); i++) {
+		//for(int i=0; i < 9; i++) {
 			String word = javaProgram.get(i);
 
 			//If it is a reserved word, print right away
@@ -101,7 +101,7 @@ public class DynamicFSA {
 					if(switchArr[index] == -1) {
 						//Set index to next available location (symbolPtr)
 						switchArr[index] = symbolPtr;
-
+						
 						//Store unique part of word in symbolArr
 						createUniqueID(word, 1);
 
@@ -122,8 +122,9 @@ public class DynamicFSA {
 							} else {	//IF NO MATCH
 								if(nextArr[symbolPtr] != -1) {	
 									//Update symbolPtr if there is an index to jump to
+									//System.out.println("There is an index in next arr - index: " + symbolPtr);
 									symbolPtr = nextArr[symbolPtr];
-									System.out.println("There is no index in next arr - index: " + symbolPtr);
+									
 								} else {	
 									//Set nextArr to next available spot (lastReference)
 									nextArr[symbolPtr] = lastReference;
@@ -131,7 +132,7 @@ public class DynamicFSA {
 									//Update symbolPtr to nextArr index
 									symbolPtr = nextArr[symbolPtr];
 
-									System.out.println("THere is index in next arr -index: " + symbolPtr);
+									//System.out.println("THere is no index in next arr -index: " + symbolPtr);
 									break;
 								}
 							}
@@ -156,6 +157,10 @@ public class DynamicFSA {
 		for(; counter < word.length(); counter++) {
 			symbolArr[symbolPtr] = word.charAt(counter);
 			symbolPtr += 1;
+			
+			//Update symbolPtr to next available index
+			lastReference = symbolPtr;
+			//System.out.println("Last ref: " + lastReference);
 		}
 
 		//Concatenate end_marker '*'
@@ -164,16 +169,21 @@ public class DynamicFSA {
 		if(counter == word.length() && symbolArr[symbolPtr] != '?') {
 			symbolArr[symbolPtr] = '?';
 			symbolPtr += 1;
+			
+			//Update symbolPtr to next available index
+			lastReference = symbolPtr;
+			//System.out.println("Last ref: " + lastReference);
 		}
 		
 		if(counter == word.length() && symbolArr[symbolPtr] == '?') {
-			System.out.println("Dupe.");
+			//System.out.println("Dupe.");
 			symbolArr[symbolPtr] = '@';
 			symbolPtr += 1;
 		}
 
 		//Update symbolPtr to next available index
-		lastReference = symbolPtr;
+		//lastReference = symbolPtr;
+		//System.out.println("Last ref: " + lastReference);
 	}
 	
 	/**
