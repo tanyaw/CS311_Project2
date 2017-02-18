@@ -8,12 +8,12 @@ import java.util.Arrays;
 public class DynamicFSA {
 	//Implement trie data structure with 3 arrays
 	private static int[] switchArr = new int[54];
-	private static char[] symbolArr = new char[500];
-	private static int[] nextArr = new int[500];
+	private static char[] symbolArr = new char[400];
+	private static int[] nextArr = new int[400];
 
 	//Initialize pointers used in trie logic
 	private static int symbolPtr = 0;	//Set at 0 index of symbol array
-	private static int lastReference = -1;	//Not used yet, Set to -1
+	private static int lastReference = -1;	//Set to -1
 
 	public static void main(String[] args) throws FileNotFoundException {
 		//Set switchArr and nextArr values to -1
@@ -28,19 +28,19 @@ public class DynamicFSA {
 		//Iterates through reservedWords array list
 		for(int i=0; i < reservedWords.size(); i++){
 			String word = reservedWords.get(i);
-			int symbol = word.charAt(0);	//Set symbol to 1st character of word
+			int index = indexToSwitch(word.charAt(0));	//Set index to ascii value of 1st character of word
 
 			//If 1st character is not defined in switchArr
-			if(switchArr[(symbol-71)] == -1) {
+			if(switchArr[index] == -1) {
 				//Set index to next available location (symbolPtr)
-				switchArr[(symbol-71)] = symbolPtr;
+				switchArr[index] = symbolPtr;
 
 				//Store unique part of word in symbolArr
 				createUniqueWord(word, 1);
 
 			} else {	//If 1st character is defined in switchArr
 				//Update index to first instance where word begins (symbolPtr)
-				symbolPtr = switchArr[(symbol-71)];	
+				symbolPtr = switchArr[index];	
 
 				//Pointer to iterate through word
 				int counter = 1;	//Set to 2nd character 
@@ -75,28 +75,127 @@ public class DynamicFSA {
 		ArrayList<String> javaProgram = new ArrayList<String>();
 		readInput2(javaProgram);
 
-		/** LOGIC TO EXTRACT RESERVED WORDS AND IDENTIFIERS*/
-		for(int i=0; i < javaProgram.size(); i++) {
+		/** LOGIC TO EXTRACT RESERVED WORDS AND IDENTIFIERS */
+		//Iterates through javaProgram array list
+		System.out.println("Last reference: " + lastReference);
+		System.out.println("Symbolpointer: " + symbolPtr);
+		//for(int i=0; i < javaProgram.size(); i++) {
+		for(int i=0; i < 9; i++) {
 			String word = javaProgram.get(i);
 
 			//If it is a reserved word, print right away
 			if(isReservedWord(reservedWords, word)) {
 				System.out.print(word + "* ");
 			} else {
+				//Format to match Java program, print new line
 				if(word.equals("%")) {
 					System.out.println();
-				}
-				//Begin crazy logic
+				} else {		
+			
+					//Begin crazy logic
+					System.out.print(word + " ");
+			
+				 	int index = indexToSwitch(word.charAt(0));	//Set index to ascii value of 1st character of word
 
+					//If 1st character is not defined in switchArr
+					if(switchArr[index] == -1) {
+						//Set index to next available location (symbolPtr)
+						switchArr[index] = symbolPtr;
+
+						//Store unique part of word in symbolArr
+						createUniqueID(word, 1);
+
+					} else {	//If 1st character is defined in switchArr
+						//Update index to first instance where word begins (symbolPtr)
+						symbolPtr = switchArr[index];	
+
+						//Pointer to iterate through word
+						int counter = 1;	//Set to 2nd character 
+
+						//LOGIC TO NAVIGATE TRIE 
+						//Compare word to symbol array
+						while(counter < word.length()) {
+							//IF MATCH, keep iterating through word and symbolArr
+							if (word.charAt(counter) == symbolArr[symbolPtr]) {	
+								counter++;
+								symbolPtr++;
+							} else {	//IF NO MATCH
+								if(nextArr[symbolPtr] != -1) {	
+									//Update symbolPtr if there is an index to jump to
+									symbolPtr = nextArr[symbolPtr];
+									System.out.println("There is no index in next arr - index: " + symbolPtr);
+								} else {	
+									//Set nextArr to next available spot (lastReference)
+									nextArr[symbolPtr] = lastReference;
+
+									//Update symbolPtr to nextArr index
+									symbolPtr = nextArr[symbolPtr];
+
+									System.out.println("THere is index in next arr -index: " + symbolPtr);
+									break;
+								}
+							}
+						}
+						//Store unique part of word in symbolArr
+						createUniqueID(word, counter);
+					}
+				}
 			}
 		}
-
+		System.out.println("I've reached the print methods");
 		//Print trie data structure
 		printSwitchArr();
 		printSymbolNextArr();
 	}
 	
+	/**
+	 * Helper Method - 
+	 */
+	private static void createUniqueID(String word, int counter) {
+		//Put the rest of word in symbol array
+		for(; counter < word.length(); counter++) {
+			symbolArr[symbolPtr] = word.charAt(counter);
+			symbolPtr += 1;
+		}
 
+		//Concatenate end_marker '*'
+		//If we're at the end of the word and there is a star, then we have a duplicate.
+		//Don't add another star.
+		if(counter == word.length() && symbolArr[symbolPtr] != '?') {
+			symbolArr[symbolPtr] = '?';
+			symbolPtr += 1;
+		}
+		
+		if(counter == word.length() && symbolArr[symbolPtr] == '?') {
+			System.out.println("Dupe.");
+			symbolArr[symbolPtr] = '@';
+			symbolPtr += 1;
+		}
+
+		//Update symbolPtr to next available index
+		lastReference = symbolPtr;
+	}
+	
+	/**
+	 * Helper Method - Indexes character to switch array using ascii values
+	 */
+	private static int indexToSwitch(char symbol) {
+		//Symbol is a lower case character 
+		if (symbol >= 97) {
+			return (symbol -97) + 26;
+		} 
+		//Symbol is _
+		else if (symbol == 95){
+			return 52;
+		//Symbol is $
+		} else if (symbol == 36){
+			return 53;
+		} else {
+			//Symbol is an upper case character
+			return (symbol - 65);
+		}
+	}
+	
 	/**
 	 * Helper Method - Checks if word is a Java reserved word
 	 */
@@ -120,8 +219,8 @@ public class DynamicFSA {
 		}
 
 		//Concatenate end_marker '*'
-		//If we're at the end of the word and there is a star, then we have a duplicate. 
-		//Don't add another star
+		//If we're at the end of the word and there is a star, then we have a duplicate.
+		//Don't add another star.
 		if(counter == word.length() && symbolArr[symbolPtr] != '*') {
 			symbolArr[symbolPtr] = '*';
 			symbolPtr += 1;
@@ -217,9 +316,6 @@ public class DynamicFSA {
 				System.out.printf("%5s", nextArr[(i + (j*20))]);
 			}
 			System.out.println("\n");
-		
-		//System.out.println("symbol: " + Arrays.toString(symbolArr));
-		//System.out.println("next: " + Arrays.toString(nextArr));
 		}
 	}
 	
