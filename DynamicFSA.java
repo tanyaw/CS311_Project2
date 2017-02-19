@@ -28,7 +28,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 
-public class updatedTANYO {
+public class DynamicFSA {
 	//Implement trie data structure with 3 arrays
 	private static int[] switchArr = new int[54];
 	private static char[] symbolArr = new char[2000];
@@ -36,7 +36,6 @@ public class updatedTANYO {
 
 	private static ArrayList<String> reservedWords = new ArrayList<String>();
 	private static int lastReference = 0;	
-	private static boolean DEBUG = true;
 
 	public static void main(String[] args) throws FileNotFoundException {
 		//Set switchArr and nextArr values to -1
@@ -69,7 +68,6 @@ public class updatedTANYO {
 
 			//If 1st character is not defined in switchArr
 			if(switchArr[index] == -1) {
-				//if (DEBUG) System.out.println("Did not find " + word + ", placing at " + lastReference);
 				//Set index to next available location
 				switchArr[index] = lastReference;
 
@@ -81,15 +79,13 @@ public class updatedTANYO {
 
 				//Append * for unique reserved word
 				symbolArr[lastReference] = '*';
-				//if (DEBUG) System.out.println("Adding a * at " + lastReference);
 				lastReference++;
-
 			} 
 
-			else {	//If 1st character is defined in switchArr
-				int i = 1;	// comparing string
-				int j = switchArr[index];	// comparing symbol arr
-				//if (DEBUG) System.out.println("Start location found for: " + word + " at " + j);
+			//If 1st character is defined in switchArr
+			else {	
+				int i = 1;	//Pointer to compare word
+				int j = switchArr[index];	//Pointer to compare symbolArr
 
 				// LOGIC TO NAVIGATE TRIE 
 				//Compare word to symbol array
@@ -97,8 +93,6 @@ public class updatedTANYO {
 
 					//IF NO MATCH
 					if (word.charAt(i) != symbolArr[j]) {	
-						//if (DEBUG) System.out.println(word + " didn't match " + word.charAt(i) + " vs " + symbolArr[j]);
-
 						// nextArr doesn't have a spot to jump to
 						if(nextArr[j] == -1) {	
 							//Set nextArr to next available spot (lastReference)
@@ -106,15 +100,13 @@ public class updatedTANYO {
 
 							//Update symbolPtr to nextArr index
 							j = nextArr[j];
-							//if (DEBUG) System.out.println(word + " jumping to new location @ " + j);
 							break;
 						} 
 
 						// nextArr has a spot to jump to
 						else {	
 							//Update symbolPtr if there is an index to jump to
-							j = nextArr[j];				
-							//if (DEBUG) System.out.println(word + " jumping to known location @ " + j);			
+							j = nextArr[j];							
 						}
 					} 
 
@@ -132,7 +124,9 @@ public class updatedTANYO {
 
 				else {	//Not a duplicate
 
-					if (i == word.length()) { nextArr[j] = lastReference; } //Word was shorter and we still need to record nextArr
+					if (i == word.length()) {	//Word was shorter and we still need to record nextArr
+						nextArr[j] = lastReference; 
+					} 
 
 					while(i < word.length()) {	//Add whatever is left of the new word
 						symbolArr[lastReference] = word.charAt(i);
@@ -175,7 +169,6 @@ public class updatedTANYO {
 
 			//If 1st character is not defined in switchArr
 			if(switchArr[index] == -1) {
-				//if (DEBUG) System.out.println("Did not find " + word + ", placing at " + lastReference);
 				//Set index to next available location (symbolPtr)
 				switchArr[index] = lastReference;
 
@@ -192,9 +185,8 @@ public class updatedTANYO {
 			} 
 
 			else {	//If 1st character is defined in switchArr
-				int i = 1;	// comparing string
-				int j = switchArr[index];	// comparing symbol arr
-				//if (DEBUG) System.out.println("Start location found for: " + word + " at " + j);
+				int i = 1;	//Pointer to compare word
+				int j = switchArr[index];	//Pointer to compare symbolArr
 
 				// LOGIC TO NAVIGATE TRIE 
 				//Compare word to symbol array
@@ -202,8 +194,6 @@ public class updatedTANYO {
 
 					//IF NO MATCH
 					if (word.charAt(i) != symbolArr[j]) {	
-						//if (DEBUG) System.out.println(word + " didn't match " + word.charAt(i) + " vs " + symbolArr[j]);
-
 						// nextArr doesn't have a spot to jump to
 						if(nextArr[j] == -1) {	
 							//Set nextArr to next available spot (lastReference)
@@ -211,15 +201,13 @@ public class updatedTANYO {
 
 							//Update symbolPtr to nextArr index
 							j = nextArr[j];
-							//if (DEBUG) System.out.println(word + " jumping to new location @ " + j);
 							break;
 						} 
 
 						// nextArr has a spot to jump to
 						else {	
 							//Update symbolPtr if there is an index to jump to
-							j = nextArr[j];				
-							//if (DEBUG) System.out.println(word + " jumping to known location @ " + j);			
+							j = nextArr[j];						
 						}
 					} 
 
@@ -243,7 +231,6 @@ public class updatedTANYO {
 						}
 
 						j = nextArr[j];
-						//System.out.println("Jumping to " + j);
 					}	
 
 					if (!dupe) {
@@ -259,7 +246,7 @@ public class updatedTANYO {
 				//Prefix word handling
 				if (i == word.length() && word.length() != 1 ) {
 					while (true) {	// Until there is no place to jump to
-						if (symbolArr[j] == '*' || symbolArr[j] == '?' || symbolArr[j] == '@') { // Duplicate
+						if (symbolArr[j] == '*' || symbolArr[j] == '?' || symbolArr[j] == '@') { //Duplicate
 							dupe = true;
 							break;
 						}
@@ -269,7 +256,6 @@ public class updatedTANYO {
 						}
 
 						j = nextArr[j];
-						//System.out.println("Jumping to " + j);
 					}	
 
 					if (!dupe) {
@@ -284,7 +270,6 @@ public class updatedTANYO {
 
 				//Duplicate handling
 				if (dupe == true || (word.length() == i && symbolArr[j] == '?') || (word.length() == i && symbolArr[j] == '@')) {
-					//System.out.println("DUPE FOUND = " + word);
 					//Append @ for repeated identifier
 					symbolArr[j] = '@';
 					System.out.print(word + "@ ");
