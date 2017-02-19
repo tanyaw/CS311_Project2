@@ -1,3 +1,26 @@
+/**
+ * CS 311 Formal Languages and Automata
+ * Project #2 - Build Dynamic FSA
+ * Winter Quarter 2017
+ * Dr. Daisy Sang
+ * Author: Tanya Wanwatanakool
+ *
+ * In this project, we have two input files, Project2_Input1.txt
+ * and Project2_Input2.txt, that hold Java reserved words and a 
+ * Java program respectively.
+ * 
+ * DynamicFSA simulates a basic symbol table manager to 
+ * recognize Java reserved words and identifiers using a trie 
+ * data structure that is implemented with three arrays.
+ *  
+ *
+ * How to compile, link, and run this program:
+ *   1) Please make sure Project2_Input1.txt and Project2_Input2.txt are in the directory before running the program
+ *   2) javac DynamicFSA.java
+ *   3) java DynamicFSA
+ * 
+ */
+
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
@@ -5,240 +28,308 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 
-public class DynamicFSA {
+public class updatedTANYO {
 	//Implement trie data structure with 3 arrays
 	private static int[] switchArr = new int[54];
-	private static char[] symbolArr = new char[400];
-	private static int[] nextArr = new int[400];
+	private static char[] symbolArr = new char[2000];
+	private static int[] nextArr = new int[2000];
 
-	//Initialize pointers used in trie logic
-	private static int symbolPtr = 0;	//Set at 0 index of symbol array
-	private static int lastReference = -1;	//Set to -1
+	private static ArrayList<String> reservedWords = new ArrayList<String>();
+	private static int lastReference = 0;	
+	private static boolean DEBUG = true;
 
 	public static void main(String[] args) throws FileNotFoundException {
 		//Set switchArr and nextArr values to -1
 		Arrays.fill(switchArr, -1);
 		Arrays.fill(nextArr, -1);
 
-		/** READ FIRST INPUT FILE */
-		ArrayList<String> reservedWords = new ArrayList<String>();
+		//READ FIRST INPUT FILE
 		readInput1(reservedWords);
+		parseFile(reservedWords);
 
-		/** LOGIC TO STORE JAVA RESERVED WORDS IN TRIE */
-		//Iterates through reservedWords array list
-		for(int i=0; i < reservedWords.size(); i++){
-			String word = reservedWords.get(i);
+		//READ SECOND INPUT FILE
+		ArrayList<String> javaProgram = new ArrayList<String>();
+		readInput2(javaProgram);
+		parseFile2(javaProgram);
+
+		//PRINT TRIE CONTENTS
+		printSwitchArr();
+		printSymbolNextArr();
+	}
+
+	/**
+	 * Helper Method - Parses through Project2_Input1.txt
+	 *                 Extracts and stores Java reserved words in trie
+	 */
+	private static void parseFile(ArrayList<String> s) {
+		for(int k = 0; k < s.size(); k++) {
+			boolean dupe = false;
+			String word = s.get(k);
 			int index = indexToSwitch(word.charAt(0));	//Set index to ascii value of 1st character of word
 
 			//If 1st character is not defined in switchArr
 			if(switchArr[index] == -1) {
-				//Set index to next available location (symbolPtr)
-				switchArr[index] = symbolPtr;
+				//if (DEBUG) System.out.println("Did not find " + word + ", placing at " + lastReference);
+				//Set index to next available location
+				switchArr[index] = lastReference;
 
-				//Store unique part of word in symbolArr
-				createUniqueWord(word, 1);
+				//Add the rest of new word
+				for (int j = 1; j < word.length(); j++) {
+					symbolArr[lastReference] = word.charAt(j);
+					lastReference++;
+				}
 
-			} else {	//If 1st character is defined in switchArr
-				//Update index to first instance where word begins (symbolPtr)
-				symbolPtr = switchArr[index];	
+				//Append * for unique reserved word
+				symbolArr[lastReference] = '*';
+				//if (DEBUG) System.out.println("Adding a * at " + lastReference);
+				lastReference++;
 
-				//Pointer to iterate through word
-				int counter = 1;	//Set to 2nd character 
+			} 
 
-				/** LOGIC TO NAVIGATE TRIE */
+			else {	//If 1st character is defined in switchArr
+				int i = 1;	// comparing string
+				int j = switchArr[index];	// comparing symbol arr
+				//if (DEBUG) System.out.println("Start location found for: " + word + " at " + j);
+
+				// LOGIC TO NAVIGATE TRIE 
 				//Compare word to symbol array
-				while(counter < word.length()) {
-					//IF MATCH, keep iterating through word and symbolArr
-					if (word.charAt(counter) == symbolArr[symbolPtr]) {	
-						counter++;
-						symbolPtr++;
-					} else {	//IF NO MATCH
-						if(nextArr[symbolPtr] != -1) {	
-							//Update symbolPtr if there is an index to jump to
-							symbolPtr = nextArr[symbolPtr];
-						} else {	
+				while(i < word.length()) {
+
+					//IF NO MATCH
+					if (word.charAt(i) != symbolArr[j]) {	
+						//if (DEBUG) System.out.println(word + " didn't match " + word.charAt(i) + " vs " + symbolArr[j]);
+
+						// nextArr doesn't have a spot to jump to
+						if(nextArr[j] == -1) {	
 							//Set nextArr to next available spot (lastReference)
-							nextArr[symbolPtr] = lastReference;
+							nextArr[j] = lastReference;
 
 							//Update symbolPtr to nextArr index
-							symbolPtr = nextArr[symbolPtr];
+							j = nextArr[j];
+							//if (DEBUG) System.out.println(word + " jumping to new location @ " + j);
+							break;
+						} 
+
+						// nextArr has a spot to jump to
+						else {	
+							//Update symbolPtr if there is an index to jump to
+							j = nextArr[j];				
+							//if (DEBUG) System.out.println(word + " jumping to known location @ " + j);			
+						}
+					} 
+
+					//IF MATCH, keep iterating through word and symbolArr
+					else {	
+						i++;
+						j++;
+					}
+				}
+
+				//Duplicate handling
+				if ((word.length() == i && symbolArr[j] == '*') || dupe == true) {
+					System.out.println("DUPE FOUND = " + word);
+				}		
+
+				else {	//Not a duplicate
+
+					if (i == word.length()) { nextArr[j] = lastReference; } //Word was shorter and we still need to record nextArr
+
+					while(i < word.length()) {	//Add whatever is left of the new word
+						symbolArr[lastReference] = word.charAt(i);
+						lastReference++;	
+						i++;
+					}	
+
+					//Append a * for unique reserved word
+					symbolArr[lastReference] = '*';
+					lastReference++;
+				}
+			}
+		}
+	}
+
+	/**
+	 * Helper Method - Parses through Project2_Input2.txt
+	 *                 Extracts and stores reserved words and identifiers in trie
+	 */
+	private static void parseFile2(ArrayList<String> s) {
+		for(int k = 0; k < s.size(); k++) {
+			boolean dupe = false;
+			String word = s.get(k);
+			word.trim();
+
+			//Prevent reserved word dupes
+			if(reservedWords.contains(word)) {
+				System.out.print(word + "* ");
+				continue;
+			}
+
+			//Preserves format of Java Program
+			if(word.equals("%")) {
+				System.out.println();
+				continue;
+			}
+
+			//Set index to ascii value of 1st character of word
+			int index = indexToSwitch(word.charAt(0));	
+
+			//If 1st character is not defined in switchArr
+			if(switchArr[index] == -1) {
+				//if (DEBUG) System.out.println("Did not find " + word + ", placing at " + lastReference);
+				//Set index to next available location (symbolPtr)
+				switchArr[index] = lastReference;
+
+				//Add rest of new word
+				for (int j = 1; j < word.length(); j++) {
+					symbolArr[lastReference] = word.charAt(j);
+					lastReference++;
+				}
+
+				//Append ? for unique identifier
+				symbolArr[lastReference] = '?';
+				lastReference++;
+				System.out.print(word + "? ");
+			} 
+
+			else {	//If 1st character is defined in switchArr
+				int i = 1;	// comparing string
+				int j = switchArr[index];	// comparing symbol arr
+				//if (DEBUG) System.out.println("Start location found for: " + word + " at " + j);
+
+				// LOGIC TO NAVIGATE TRIE 
+				//Compare word to symbol array
+				while(i < word.length()) {
+
+					//IF NO MATCH
+					if (word.charAt(i) != symbolArr[j]) {	
+						//if (DEBUG) System.out.println(word + " didn't match " + word.charAt(i) + " vs " + symbolArr[j]);
+
+						// nextArr doesn't have a spot to jump to
+						if(nextArr[j] == -1) {	
+							//Set nextArr to next available spot (lastReference)
+							nextArr[j] = lastReference;
+
+							//Update symbolPtr to nextArr index
+							j = nextArr[j];
+							//if (DEBUG) System.out.println(word + " jumping to new location @ " + j);
+							break;
+						} 
+
+						// nextArr has a spot to jump to
+						else {	
+							//Update symbolPtr if there is an index to jump to
+							j = nextArr[j];				
+							//if (DEBUG) System.out.println(word + " jumping to known location @ " + j);			
+						}
+					} 
+
+					//IF MATCH, keep iterating through word and symbolArr
+					else {	
+						i++;
+						j++;
+					}
+				}
+
+				// Single letter handling
+				if (word.length() == 1) { 
+					while (true) {	// Until there is no place to jump to
+						if (symbolArr[j] == '*' || symbolArr[j] == '?' || symbolArr[j] == '@') { // Duplicate
+							dupe = true;
 							break;
 						}
-					}
-				}
-				//Store unique part of word in symbolArr
-				createUniqueWord(word, counter);
-			}
-		}
 
-		/** READ SECOND INPUT FILE */
-		ArrayList<String> javaProgram = new ArrayList<String>();
-		readInput2(javaProgram);
-
-		/** LOGIC TO EXTRACT RESERVED WORDS AND IDENTIFIERS */
-		//Iterates through javaProgram array list
-		System.out.println("Last reference: " + lastReference);
-		System.out.println("Symbolpointer: " + symbolPtr);
-		for(int i=0; i < javaProgram.size(); i++) {
-		//for(int i=0; i < 9; i++) {
-			String word = javaProgram.get(i);
-
-			//If it is a reserved word, print right away
-			if(isReservedWord(reservedWords, word)) {
-				System.out.print(word + "* ");
-			} else {
-				//Format to match Java program, print new line
-				if(word.equals("%")) {
-					System.out.println();
-				} else {		
-			
-					//Begin crazy logic
-					System.out.print(word + " ");
-			
-				 	int index = indexToSwitch(word.charAt(0));	//Set index to ascii value of 1st character of word
-
-					//If 1st character is not defined in switchArr
-					if(switchArr[index] == -1) {
-						//Set index to next available location (symbolPtr)
-						switchArr[index] = symbolPtr;
-						
-						//Store unique part of word in symbolArr
-						createUniqueID(word, 1);
-
-					} else {	//If 1st character is defined in switchArr
-						//Update index to first instance where word begins (symbolPtr)
-						symbolPtr = switchArr[index];	
-
-						//Pointer to iterate through word
-						int counter = 1;	//Set to 2nd character 
-
-						//LOGIC TO NAVIGATE TRIE 
-						//Compare word to symbol array
-						while(counter < word.length()) {
-							//IF MATCH, keep iterating through word and symbolArr
-							if (word.charAt(counter) == symbolArr[symbolPtr]) {	
-								counter++;
-								symbolPtr++;
-							} else {	//IF NO MATCH
-								if(nextArr[symbolPtr] != -1) {	
-									//Update symbolPtr if there is an index to jump to
-									//System.out.println("There is an index in next arr - index: " + symbolPtr);
-									symbolPtr = nextArr[symbolPtr];
-									
-								} else {	
-									//Set nextArr to next available spot (lastReference)
-									nextArr[symbolPtr] = lastReference;
-
-									//Update symbolPtr to nextArr index
-									symbolPtr = nextArr[symbolPtr];
-
-									//System.out.println("THere is no index in next arr -index: " + symbolPtr);
-									break;
-								}
-							}
+						if (nextArr[j] == -1) {
+							break;
 						}
-						//Store unique part of word in symbolArr
-						createUniqueID(word, counter);
+
+						j = nextArr[j];
+						//System.out.println("Jumping to " + j);
+					}	
+
+					if (!dupe) {
+						//Append ? for unique identifier
+						symbolArr[lastReference] = '?';
+						nextArr[j] = lastReference;
+						lastReference++;
+						System.out.print(word + "? ");
+						continue;
+					}	
+				}
+
+				//Prefix word handling
+				if (i == word.length() && word.length() != 1 ) {
+					while (true) {	// Until there is no place to jump to
+						if (symbolArr[j] == '*' || symbolArr[j] == '?' || symbolArr[j] == '@') { // Duplicate
+							dupe = true;
+							break;
+						}
+
+						if (nextArr[j] == -1) {
+							break;
+						}
+
+						j = nextArr[j];
+						//System.out.println("Jumping to " + j);
+					}	
+
+					if (!dupe) {
+						//Append ? for unique identifier
+						symbolArr[lastReference] = '?';
+						nextArr[j] = lastReference;
+						lastReference++;
+						System.out.print(word + "? ");
+						continue;
 					}
+				}
+
+				//Duplicate handling
+				if (dupe == true || (word.length() == i && symbolArr[j] == '?') || (word.length() == i && symbolArr[j] == '@')) {
+					//System.out.println("DUPE FOUND = " + word);
+					//Append @ for repeated identifier
+					symbolArr[j] = '@';
+					System.out.print(word + "@ ");
+					continue;
+				}		
+
+				else {	//Not a duplicate
+
+					if (i == word.length()) { nextArr[j] = lastReference; } //Word was shorter and we still need to record nextArr
+
+					while(i < word.length()) {	//Add whatever is left of the new word
+						symbolArr[lastReference] = word.charAt(i);
+						lastReference++;	
+						i++;
+					}
+
+					//Append ? for unique identifier
+					symbolArr[lastReference] = '?';
+					lastReference++;
+					System.out.print(word + "? ");
 				}
 			}
 		}
-		System.out.println("I've reached the print methods");
-		//Print trie data structure
-		printSwitchArr();
-		printSymbolNextArr();
 	}
-	
-	/**
-	 * Helper Method - 
-	 */
-	private static void createUniqueID(String word, int counter) {
-		//Put the rest of word in symbol array
-		for(; counter < word.length(); counter++) {
-			symbolArr[symbolPtr] = word.charAt(counter);
-			symbolPtr += 1;
-			
-			//Update symbolPtr to next available index
-			lastReference = symbolPtr;
-			//System.out.println("Last ref: " + lastReference);
-		}
 
-		//Concatenate end_marker '*'
-		//If we're at the end of the word and there is a star, then we have a duplicate.
-		//Don't add another star.
-		if(counter == word.length() && symbolArr[symbolPtr] != '?') {
-			symbolArr[symbolPtr] = '?';
-			symbolPtr += 1;
-			
-			//Update symbolPtr to next available index
-			lastReference = symbolPtr;
-			//System.out.println("Last ref: " + lastReference);
-		}
-		
-		if(counter == word.length() && symbolArr[symbolPtr] == '?') {
-			//System.out.println("Dupe.");
-			symbolArr[symbolPtr] = '@';
-			symbolPtr += 1;
-		}
 
-		//Update symbolPtr to next available index
-		//lastReference = symbolPtr;
-		//System.out.println("Last ref: " + lastReference);
-	}
-	
 	/**
 	 * Helper Method - Indexes character to switch array using ascii values
 	 */
 	private static int indexToSwitch(char symbol) {
-		//Symbol is a lower case character 
 		if (symbol >= 97) {
+			//Symbol is a lower case character 
 			return (symbol -97) + 26;
-		} 
-		//Symbol is _
-		else if (symbol == 95){
+		} else if (symbol == 95){
+			//Symbol is _
 			return 52;
-		//Symbol is $
 		} else if (symbol == 36){
+			//Symbol is $
 			return 53;
 		} else {
 			//Symbol is an upper case character
 			return (symbol - 65);
 		}
 	}
-	
-	/**
-	 * Helper Method - Checks if word is a Java reserved word
-	 */
-	private static boolean isReservedWord(ArrayList<String> reservedWords, String s) {
-		boolean bool = false;
-		if(reservedWords.contains(s)) {
-			bool = true;
-		} 
-		return bool;
-	}
 
-	/**
-	 * Helper Method - Stores unique characters of word in symbolArr
-	 * 				   Iterates from given counter to word.length()
-	 */
-	private static void createUniqueWord(String word, int counter) {
-		//Put the rest of word in symbol array
-		for(; counter < word.length(); counter++) {
-			symbolArr[symbolPtr] = word.charAt(counter);
-			symbolPtr += 1;
-		}
-
-		//Concatenate end_marker '*'
-		//If we're at the end of the word and there is a star, then we have a duplicate.
-		//Don't add another star.
-		if(counter == word.length() && symbolArr[symbolPtr] != '*') {
-			symbolArr[symbolPtr] = '*';
-			symbolPtr += 1;
-		}
-
-		//Update symbolPtr to next available index
-		lastReference = symbolPtr;
-	}
 
 	/**
 	 * Helper Method - Read Project2_Input1.txt
@@ -279,7 +370,7 @@ public class DynamicFSA {
 
 				//Split the line using spaces as delimiter
 				String[] split = line.split(" ");
-				
+
 				//Add % to indicate new line
 				String[] lineSplit = new String[(split.length + 1)];
 				for(int i=0; i < split.length; i++) {
@@ -292,15 +383,16 @@ public class DynamicFSA {
 
 					if((lineSplit[i]).equals("")) {
 						//If empty string, don't add to Array List
+					} else if(Character.isDigit(lineSplit[i].charAt(0)) ) {
+						//Word begins with integer, it is NOT an identifier
 					} else if(lineSplit[i].matches("[0-9]")) {
-						//If word begins with integer, it is NOT an identifier
+						//If word is integer, it is NOT an identifier
 					} else {
 						//It is a reserved word or identifier, add to Array List
 						javaProgram.add(lineSplit[i]);	
 					}
 				}
 			}
-			//System.out.println(Arrays.toString(javaProgram.toArray()));
 		} catch(IOException e) {
 			e.printStackTrace();
 		}
@@ -310,17 +402,17 @@ public class DynamicFSA {
 	 * Formatting Method - Prints Symbol and Next Array contents
 	 */
 	private static void printSymbolNextArr() {
-		for(int j=0; j < (symbolArr.length/20); j++) {
+		for(int j=0; j <= (lastReference / 20); j++) {
 			System.out.print("       ");
 			for(int i=0; i < 20; i++) {
 				System.out.printf("%5d", (i + (j*20)));
 			}
-	
+
 			System.out.print("\nsymbol:");
 			for(int i=0; i < 20; i++) {
 				System.out.printf("%5s", symbolArr[(i + (j*20))]);
 			}
-			
+
 			System.out.print("\n  next:");
 			for(int i=0; i < 20; i++) {
 				System.out.printf("%5s", nextArr[(i + (j*20))]);
@@ -328,7 +420,7 @@ public class DynamicFSA {
 			System.out.println("\n");
 		}
 	}
-	
+
 	/**
 	 * Formatting Method - Prints Switch array contents
 	 */
