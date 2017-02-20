@@ -29,14 +29,15 @@ import java.util.ArrayList;
 import java.util.Arrays;
 
 public class DynamicFSA {
+	//Used for trie logic iteration
+	private static ArrayList<String> reservedWords = new ArrayList<String>();
+	private static int lastReference = 0;	
+	
 	//Implement trie data structure with 3 arrays
 	private static int[] switchArr = new int[54];
 	private static char[] symbolArr = new char[2000];
 	private static int[] nextArr = new int[2000];
-
-	private static ArrayList<String> reservedWords = new ArrayList<String>();
-	private static int lastReference = 0;	
-
+	
 	public static void main(String[] args) throws FileNotFoundException {
 		//Set switchArr and nextArr values to -1
 		Arrays.fill(switchArr, -1);
@@ -87,30 +88,31 @@ public class DynamicFSA {
 				int i = 1;	//Pointer to compare word
 				int j = switchArr[index];	//Pointer to compare symbolArr
 
-				// LOGIC TO NAVIGATE TRIE 
+				//LOGIC TO NAVIGATE TRIE 
 				//Compare word to symbol array
 				while(i < word.length()) {
 
 					//IF NO MATCH
 					if (word.charAt(i) != symbolArr[j]) {	
-						// nextArr doesn't have a spot to jump to
+						//nextArr doesn't have an index to jump to
 						if(nextArr[j] == -1) {	
-							//Set nextArr to next available spot (lastReference)
+							//Set nextArr to next available index (lastReference)
 							nextArr[j] = lastReference;
 
-							//Update symbolPtr to nextArr index
+							//Update to nextArr index
 							j = nextArr[j];
 							break;
 						} 
 
-						// nextArr has a spot to jump to
+						//nextArr has an index to jump to
 						else {	
-							//Update symbolPtr if there is an index to jump to
+							//Update if there is an index to jump to
 							j = nextArr[j];							
 						}
 					} 
 
-					//IF MATCH, keep iterating through word and symbolArr
+					//IF MATCH, increment pointers
+					//Keep iterating through word and symbolArr
 					else {	
 						i++;
 						j++;
@@ -124,11 +126,11 @@ public class DynamicFSA {
 
 				else {	//Not a duplicate
 
-					if (i == word.length()) {	//Word was shorter and we still need to record nextArr
+					if (i == word.length()) {	//Word contains a prefix and we still need to record nextArr
 						nextArr[j] = lastReference; 
 					} 
 
-					while(i < word.length()) {	//Add whatever is left of the new word
+					while(i < word.length()) {	//Add the rest of new word
 						symbolArr[lastReference] = word.charAt(i);
 						lastReference++;	
 						i++;
@@ -169,7 +171,7 @@ public class DynamicFSA {
 
 			//If 1st character is not defined in switchArr
 			if(switchArr[index] == -1) {
-				//Set index to next available location (symbolPtr)
+				//Set index to next available location
 				switchArr[index] = lastReference;
 
 				//Add rest of new word
@@ -188,64 +190,40 @@ public class DynamicFSA {
 				int i = 1;	//Pointer to compare word
 				int j = switchArr[index];	//Pointer to compare symbolArr
 
-				// LOGIC TO NAVIGATE TRIE 
+				//LOGIC TO NAVIGATE TRIE 
 				//Compare word to symbol array
 				while(i < word.length()) {
 
 					//IF NO MATCH
 					if (word.charAt(i) != symbolArr[j]) {	
-						// nextArr doesn't have a spot to jump to
+						//nextArr doesn't have an index to jump to
 						if(nextArr[j] == -1) {	
-							//Set nextArr to next available spot (lastReference)
+							//Set nextArr to next available index (lastReference)
 							nextArr[j] = lastReference;
 
-							//Update symbolPtr to nextArr index
+							//Update to nextArr index
 							j = nextArr[j];
 							break;
 						} 
 
-						// nextArr has a spot to jump to
+						//nextArr has an index to jump to
 						else {	
-							//Update symbolPtr if there is an index to jump to
+							//Update if there is an index to jump to
 							j = nextArr[j];						
 						}
 					} 
 
-					//IF MATCH, keep iterating through word and symbolArr
+					//IF MATCH, increment pointers
+					//Keep iterating through word and symbolArr
 					else {	
 						i++;
 						j++;
 					}
 				}
 
-				// Single letter handling
+				//Single letter handling
 				if (word.length() == 1) { 
-					while (true) {	// Until there is no place to jump to
-						if (symbolArr[j] == '*' || symbolArr[j] == '?' || symbolArr[j] == '@') { // Duplicate
-							dupe = true;
-							break;
-						}
-
-						if (nextArr[j] == -1) {
-							break;
-						}
-
-						j = nextArr[j];
-					}	
-
-					if (!dupe) {
-						//Append ? for unique identifier
-						symbolArr[lastReference] = '?';
-						nextArr[j] = lastReference;
-						lastReference++;
-						System.out.print(word + "? ");
-						continue;
-					}	
-				}
-
-				//Prefix word handling
-				if (i == word.length() && word.length() != 1 ) {
-					while (true) {	// Until there is no place to jump to
+					while (true) {	//Until there is no index to jump to
 						if (symbolArr[j] == '*' || symbolArr[j] == '?' || symbolArr[j] == '@') { //Duplicate
 							dupe = true;
 							break;
@@ -258,8 +236,33 @@ public class DynamicFSA {
 						j = nextArr[j];
 					}	
 
+					//Append ? for unique identifier
 					if (!dupe) {
-						//Append ? for unique identifier
+						symbolArr[lastReference] = '?';
+						nextArr[j] = lastReference;
+						lastReference++;
+						System.out.print(word + "? ");
+						continue;
+					}	
+				}
+
+				//Prefix word handling
+				if (i == word.length() && word.length() != 1 ) {
+					while (true) {	//Until there is no index to jump to
+						if (symbolArr[j] == '*' || symbolArr[j] == '?' || symbolArr[j] == '@') { //Duplicate
+							dupe = true;
+							break;
+						}
+
+						if (nextArr[j] == -1) {
+							break;
+						}
+
+						j = nextArr[j];
+					}	
+
+					//Append ? for unique identifier
+					if (!dupe) {
 						symbolArr[lastReference] = '?';
 						nextArr[j] = lastReference;
 						lastReference++;
@@ -278,9 +281,9 @@ public class DynamicFSA {
 
 				else {	//Not a duplicate
 
-					if (i == word.length()) { nextArr[j] = lastReference; } //Word was shorter and we still need to record nextArr
+					if (i == word.length()) { nextArr[j] = lastReference; } //Word contains prefix and we still need to record nextArr
 
-					while(i < word.length()) {	//Add whatever is left of the new word
+					while(i < word.length()) {	//Add the rest of new word
 						symbolArr[lastReference] = word.charAt(i);
 						lastReference++;	
 						i++;
@@ -400,7 +403,11 @@ public class DynamicFSA {
 
 			System.out.print("\n  next:");
 			for(int i=0; i < 20; i++) {
-				System.out.printf("%5s", nextArr[(i + (j*20))]);
+				if(nextArr[(i+(j*20))] == -1) {
+					System.out.printf("%5s", " ");
+				} else {
+					System.out.printf("%5s", nextArr[(i + (j*20))]);
+				}
 			}
 			System.out.println("\n");
 		}
