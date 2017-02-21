@@ -37,7 +37,7 @@ public class DynamicFSA {
 	private static int[] switchArr = new int[54];
 	private static char[] symbolArr = new char[2000];
 	private static int[] nextArr = new int[2000];
-	
+
 	public static void main(String[] args) throws FileNotFoundException {
 		//Set switchArr and nextArr values to -1
 		Arrays.fill(switchArr, -1);
@@ -69,7 +69,7 @@ public class DynamicFSA {
 
 			//If 1st character is not defined in switchArr
 			if(switchArr[index] == -1) {
-				//Set index to next available location
+				//Set index to next available index
 				switchArr[index] = lastReference;
 
 				//Add the rest of new word
@@ -119,27 +119,20 @@ public class DynamicFSA {
 					}
 				}
 
-				//Duplicate handling
-				if ((word.length() == i && symbolArr[j] == '*') || dupe == true) {
-					System.out.println("DUPE FOUND = " + word);
-				}		
+				//Word breaks while loop and we still need to record nextArr
+				if (i == word.length()) {	
+					nextArr[j] = lastReference; 
+				} 
 
-				else {	//Not a duplicate
+				while(i < word.length()) {	//Add the rest of new word
+					symbolArr[lastReference] = word.charAt(i);
+					lastReference++;	
+					i++;
+				}	
 
-					if (i == word.length()) {	//Word contains a prefix and we still need to record nextArr
-						nextArr[j] = lastReference; 
-					} 
-
-					while(i < word.length()) {	//Add the rest of new word
-						symbolArr[lastReference] = word.charAt(i);
-						lastReference++;	
-						i++;
-					}	
-
-					//Append a * for unique reserved word
-					symbolArr[lastReference] = '*';
-					lastReference++;
-				}
+				//Append a * for unique reserved word
+				symbolArr[lastReference] = '*';
+				lastReference++;
 			}
 		}
 	}
@@ -154,7 +147,7 @@ public class DynamicFSA {
 			String word = s.get(k);
 			word.trim();
 
-			//Prevent reserved word dupes
+			//Prevent reserved word duplicates
 			if(reservedWords.contains(word)) {
 				System.out.print(word + "* ");
 				continue;
@@ -171,7 +164,7 @@ public class DynamicFSA {
 
 			//If 1st character is not defined in switchArr
 			if(switchArr[index] == -1) {
-				//Set index to next available location
+				//Set index to next available index
 				switchArr[index] = lastReference;
 
 				//Add rest of new word
@@ -281,7 +274,8 @@ public class DynamicFSA {
 
 				else {	//Not a duplicate
 
-					if (i == word.length()) { nextArr[j] = lastReference; } //Word contains prefix and we still need to record nextArr
+					//Word breaks while loop and we still need to record nextArr
+					if (i == word.length()) { nextArr[j] = lastReference; } 
 
 					while(i < word.length()) {	//Add the rest of new word
 						symbolArr[lastReference] = word.charAt(i);
@@ -420,41 +414,41 @@ public class DynamicFSA {
 		//Indices 0 to 20
 		System.out.print("       ");
 		for(int i=0; i < 20; i++) {
-			System.out.printf("%6s", (char) (i + 65));
+			System.out.printf("%5s", (char) (i + 65));
 		}
 
 		System.out.print("\nswitch:");
 		for(int i=0; i < 20; i++) {
-			System.out.printf("%6s", switchArr[i]);
+			System.out.printf("%5s", switchArr[i]);
 		}
 		System.out.println("\n");
 
 		//Indices 20 to 40
 		System.out.print("       ");
 		for(int i=20; i < 26; i++) {
-			System.out.printf("%6s",(char) (i + 65));
+			System.out.printf("%5s",(char) (i + 65));
 		}
 
 		for(int i=26; i < 40; i++) {
-			System.out.printf("%6s",(char) (i + 71));
+			System.out.printf("%5s",(char) (i + 71));
 		}
 
 		System.out.print("\nswitch:");
 		for(int i=20; i < 40; i++) {
-			System.out.printf("%6s", switchArr[i]);
+			System.out.printf("%5s", switchArr[i]);
 		}
 		System.out.println("\n");
 
 		//Indices 40 to 54
 		System.out.print("       ");
 		for(int i=40; i < 52; i++) {
-			System.out.printf("%6s",(char) (i + 71));
+			System.out.printf("%5s",(char) (i + 71));
 		}
-		System.out.printf("%6s%6s", '_', '$');
+		System.out.printf("%5s%5s", '_', '$');
 
 		System.out.print("\nswitch:");
 		for(int i=40; i < 54; i++) {
-			System.out.printf("%6s", switchArr[i]);
+			System.out.printf("%5s", switchArr[i]);
 		}
 		System.out.println("\n\n");
 	}
